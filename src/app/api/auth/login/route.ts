@@ -2,22 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@/lib/auth";
-
-interface StoredUser {
-  id: string;
-  name: string;
-  email: string;
-  passwordHash: string;
-}
-
-const users: StoredUser[] = [
-  {
-    id: "demo-user-001",
-    name: "Demo User",
-    email: "demo@kanban.app",
-    passwordHash: bcrypt.hashSync("demo123", 12),
-  },
-];
+import { findUserByEmail } from "@/lib/user-store";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = users.find((u) => u.email === email);
+    const user = findUserByEmail(email);
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials" },

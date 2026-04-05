@@ -2,15 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@/lib/auth";
-
-interface StoredUser {
-  id: string;
-  name: string;
-  email: string;
-  passwordHash: string;
-}
-
-const users: StoredUser[] = [];
+import { findUserByEmail, addUser } from "@/lib/user-store";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +22,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing = users.find((u) => u.email === email);
+    const existing = findUserByEmail(email);
     if (existing) {
       return NextResponse.json(
         { error: "Email already registered" },
@@ -41,14 +33,14 @@ export async function POST(request: NextRequest) {
     const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    const user: StoredUser = {
+    const user = {
       id: crypto.randomUUID(),
       name,
       email,
       passwordHash,
     };
 
-    users.push(user);
+    addUser(user);
 
     const token = jwt.sign(
       { userId: user.id, email: user.email },
