@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FlowBoard
 
-## Getting Started
+A production-grade, highly responsive Kanban board demonstrating optimistic UI updates, robust state management, and real-world system resilience.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **True Optimistic UI**: Instant, unblocked UI updates that rollback gracefully on API failure.
+- **Resilient Drag & Drop**: Smooth dragging with `dnd-kit`, handling 1.5s API delays and 20% simulated failure rates.
+- **Secure Authentication**: JWT-based auth with bcrypt-hashed passwords.
+- **State Management**: Centralized using Zustand for both board layout and auth sessions.
+- **Modern Stack**: Next.js 15 (App Router), React 19, Tailwind CSS v4, TypeScript.
+
+## Folder Structure
+
+```
+kanban-board/
+├── src/
+│   ├── app/                 # Next.js App Router endpoints and pages
+│   │   ├── api/             # RESTful API routes (auth, tasks)
+│   │   ├── globals.css      # Core styles and Tailwind entry
+│   │   ├── layout.tsx       # Root document layout
+│   │   └── page.tsx         # Main application container
+│   ├── components/          # React components
+│   │   ├── add-task-modal.tsx  # Task creation form
+│   │   ├── auth-gate.tsx       # Auth protection and login UI
+│   │   ├── board.tsx           # Drag & Drop context orchestrator
+│   │   ├── column.tsx          # Board column droppable zones
+│   │   ├── header.tsx          # App header with user profile menu
+│   │   ├── task-card.tsx       # Draggable task item
+│   │   └── toast-container.tsx # Notification system
+│   ├── lib/                 # Utilities and constants
+│   │   ├── auth.ts             # Auth constants
+│   │   ├── constants.ts        # Seed data, column config
+│   │   └── mock-api.ts         # Delay/failure simulation wrapper
+│   ├── store/               # Global state
+│   │   ├── auth-store.ts       # Auth state management
+│   │   └── board-store.ts      # Task and UI optimistic state
+│   └── types/               # Shared TypeScript interfaces
+│       └── index.ts
+├── .env.example             # Template for variables
+└── package.json             # Dependencies
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup & Running Locally
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone & Install**
+   ```bash
+   git clone <repo-url>
+   cd kanban-board
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Environment Variables**
+   Create a `.env.local` file based on the example:
+   ```bash
+   cp .env.example .env.local
+   ```
+   *Modify `JWT_SECRET` for secure local testing.*
 
-## Learn More
+3. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+   The application will be running at `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+## Demo Account
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+You can log in directly using the seeded demo credentials:
+- **Email:** `demo@kanban.app`
+- **Password:** `demo123`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+*(You can also register a new account on the auth screen).*
 
-## Deploy on Vercel
+## Deployment (Vercel)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Ensure the code is pushed to a GitHub repository.
+2. Log into [Vercel](https://vercel.com) and click **Add New Project**.
+3. Import your GitHub repository.
+4. Expand **Environment Variables** and add:
+   - `JWT_SECRET` (Use a strong unique string here).
+5. Click **Deploy**. Vercel will automatically detect the Next.js setup.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Technical Decisions & Refinements
+
+- **Why Zustand?** Lighter and less boilerplate than Redux, providing highly predictable snap-shotting for the optimistic updates.
+- **Rollback Approach**: Before dispatching the task movement to the server, a pristine snapshot of the columns is kept in state. If the API hits the ~20% simulated failure threshold, the UI elegantly snaps back to this state and a toast warns the user.
+- **Durable Styling**: Minimal, robust class names driven by utility tokens. We enforce Tailwind to avoid overly deep CSS hierarchies while leveraging native CSS variables for theme primitives.
